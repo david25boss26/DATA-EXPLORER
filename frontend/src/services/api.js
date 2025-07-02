@@ -54,11 +54,12 @@ export const executeQuery = async (query, tableName = null) => {
   return response.data;
 };
 
-export const generateSummary = async (tableName, sampleSize = 100, summaryType = 'general') => {
+export const generateSummary = async (tableName, sampleSize = 100, summaryType = 'general', provider = 'mock') => {
   const response = await api.post('/summarize', {
     table_name: tableName,
     sample_size: sampleSize,
     summary_type: summaryType,
+    provider: 'mock',
   });
   
   return response.data;

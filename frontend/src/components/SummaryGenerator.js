@@ -45,7 +45,7 @@ const SummaryGenerator = ({ availableTables = [] }) => {
     setSummary('');
 
     try {
-      const result = await generateSummary(selectedTable, sampleSize, summaryType);
+      const result = await generateSummary(selectedTable, sampleSize, summaryType, 'mock');
       
       if (result.success) {
         setSummary(result.summary);
@@ -87,7 +87,7 @@ const SummaryGenerator = ({ availableTables = [] }) => {
       </div>
 
       {/* Configuration */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         {/* Table Selection */}
         <div>
           <label className="block text-sm font-medium text-secondary-700 mb-2">

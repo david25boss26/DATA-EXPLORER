@@ -18,6 +18,7 @@ class SummaryRequest(BaseModel):
     sample_size: int = 100
     summary_type: str = "general"  # general, statistical, insights
     data_info: Optional[Dict[str, Any]] = None
+    provider: Optional[str] = None
 
 class SummaryResponse(BaseModel):
     success: bool

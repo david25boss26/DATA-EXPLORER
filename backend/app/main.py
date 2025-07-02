@@ -191,7 +191,13 @@ async def generate_summary(request: SummaryRequest):
         
         # Update request with data info
         request.data_info = data_info
-        
+
+        # Set provider if sent from frontend, else fallback to env
+        if request.provider:
+            llm_service.provider = request.provider.lower()
+        else:
+            llm_service.provider = os.getenv("LLM_PROVIDER", "mock").lower()
+
         # Generate summary using LLM
         summary_response = llm_service.generate_summary(request)
         if not summary_response.success:
