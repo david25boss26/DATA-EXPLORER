@@ -17,10 +17,14 @@ class LLMService:
         self.provider = os.getenv("LLM_PROVIDER", "mock").lower()
         self.api_key = os.getenv("LLM_API_KEY", "")
         self.base_url = os.getenv("LLM_BASE_URL", "")
-        self.model = os.getenv("LLM_MODEL", "gpt-3.5-turbo")
+        self.model = os.getenv("LLM_MODEL", "llama2:7b-chat")
         
     def generate_summary(self, request: SummaryRequest) -> SummaryResponse:
         """Generate a summary based on the request type and data"""
+        
+        # Normalize summary_type
+        if request.summary_type == "general":
+            request.summary_type = "overview"
         
         if self.provider == "mock":
             return self._mock_summary(request)
@@ -123,23 +127,21 @@ class LLMService:
         """Generate summary using Ollama API"""
         try:
             prompt = self._build_prompt(request)
-            
             data = {
                 "model": self.model,
                 "prompt": prompt,
                 "stream": False
             }
-            
             response = requests.post(
                 f"{self.base_url}/api/generate",
                 json=data,
                 timeout=60
             )
-            
             if response.status_code == 200:
                 result = response.json()
-                summary = result["response"]
-                
+                summary = result.get("response", "")
+                if not summary:
+                    raise Exception("Ollama returned empty response")
                 return SummaryResponse(
                     success=True,
                     summary=summary,
@@ -150,11 +152,19 @@ class LLMService:
                     processing_time=1.0
                 )
             else:
-                raise Exception(f"Ollama API error: {response.status_code}")
-                
+                error_msg = f"Ollama API error: {response.status_code} - {response.text}"
+                raise Exception(error_msg)
         except Exception as e:
-            # Fallback to mock
-            return self._mock_summary(request)
+            return SummaryResponse(
+                success=False,
+                summary="",
+                summary_type=request.summary_type,
+                provider="ollama",
+                model=self.model,
+                tokens_used=0,
+                processing_time=0.0,
+                error=str(e)
+            )
     
     def _local_summary(self, request: SummaryRequest) -> SummaryResponse:
         """Generate summary using local LLM (placeholder)"""

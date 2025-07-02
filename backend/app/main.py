@@ -194,7 +194,8 @@ async def generate_summary(request: SummaryRequest):
         
         # Generate summary using LLM
         summary_response = llm_service.generate_summary(request)
-        
+        if not summary_response.success:
+            raise HTTPException(status_code=500, detail=summary_response.error or "Failed to generate summary")
         return SummaryResponse(
             success=True,
             summary=summary_response.summary,

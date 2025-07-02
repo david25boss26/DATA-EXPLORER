@@ -4,7 +4,7 @@ import { generateSummary } from '../services/api';
 
 const SummaryGenerator = ({ availableTables = [] }) => {
   const [selectedTable, setSelectedTable] = useState('');
-  const [summaryType, setSummaryType] = useState('general');
+  const [summaryType, setSummaryType] = useState('overview');
   const [sampleSize, setSampleSize] = useState(100);
   const [generating, setGenerating] = useState(false);
   const [summary, setSummary] = useState('');
@@ -12,7 +12,7 @@ const SummaryGenerator = ({ availableTables = [] }) => {
 
   const summaryTypes = [
     {
-      id: 'general',
+      id: 'overview',
       name: 'General Summary',
       description: 'Comprehensive overview of the dataset',
       icon: Brain,
