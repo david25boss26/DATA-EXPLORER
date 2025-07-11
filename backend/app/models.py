@@ -35,7 +35,7 @@ class UploadResponse(BaseModel):
     row_count: int
     columns: List[str]
     message: str
-    plot_urls: List[str] = []
+    plot_data: Optional[list] = None
     error: Optional[str] = None
 
 class TableInfo(BaseModel):

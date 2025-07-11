@@ -117,20 +117,18 @@ async def upload_file(file: UploadFile = File(...)):
             file_info = file_processor.get_file_info(df)
 
             # Generate plots if CSV
-            plot_urls = []
+            plot_data = []
             if file_extension == '.csv':
-                plot_files = file_processor.generate_graphical_analysis(df, file.filename)
-                # Convert file paths to URLs
-                plot_urls = ["/static/plots/" + os.path.basename(p) for p in plot_files]
+                plot_data = file_processor.generate_graphical_analysis(df, file.filename)
             
-            return UploadResponse(
-                success=True,
-                table_name=result["table_name"],
-                row_count=file_info['row_count'],
-                columns=file_info['columns'],
-                message=f"Successfully uploaded {file.filename} with {file_info['row_count']} rows",
-                plot_urls=plot_urls
-            )
+            return {
+                "success": True,
+                "table_name": result["table_name"],
+                "row_count": file_info['row_count'],
+                "columns": file_info['columns'],
+                "message": f"Successfully uploaded {file.filename} with {file_info['row_count']} rows",
+                "plot_data": plot_data
+            }
             
         finally:
             # Clean up temporary file

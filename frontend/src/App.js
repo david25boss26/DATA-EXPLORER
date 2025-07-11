@@ -25,7 +25,9 @@ const App = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [backendStatus, setBackendStatus] = useState('checking');
-  const [plotUrls, setPlotUrls] = useState([]);
+  const [plotData, setPlotData] = useState([]);
+  const [filterColumn, setFilterColumn] = useState('');
+  const [filterType, setFilterType] = useState('');
 
   const tabs = [
     { id: 'upload', name: 'Upload Data', icon: Upload },
@@ -63,7 +65,7 @@ const App = () => {
     setSuccess(`Successfully uploaded ${result.table_name} with ${result.row_count} rows`);
     setError('');
     loadTables(); // Refresh tables list
-    setPlotUrls(result.plot_urls || []);
+    setPlotData(result.plot_data || []);
     setTimeout(() => setSuccess(''), 5000);
   };
 
@@ -113,16 +115,51 @@ const App = () => {
               onUploadError={handleUploadError}
             />
             {/* Graphical Analysis Area */}
-            {plotUrls.length > 0 && (
+            {plotData.length > 0 && (
               <div className="mt-8 card">
                 <h2 className="text-xl font-semibold text-secondary-900 mb-4">Graphical Analysis</h2>
+                {/* Filter UI */}
+                <div className="flex flex-wrap gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Filter by Column</label>
+                    <select
+                      className="form-select"
+                      value={filterColumn}
+                      onChange={e => setFilterColumn(e.target.value)}
+                    >
+                      <option value="">All</option>
+                      {[...new Set(plotData.map(p => p.column))].map(col => (
+                        <option key={col} value={col}>{col}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Filter by Graph Type</label>
+                    <select
+                      className="form-select"
+                      value={filterType}
+                      onChange={e => setFilterType(e.target.value)}
+                    >
+                      <option value="">All</option>
+                      {[...new Set(plotData.map(p => p.type))].map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    className="btn-secondary self-end"
+                    onClick={() => { setFilterColumn(''); setFilterType(''); }}
+                  >
+                    Reset Filters
+                  </button>
+                </div>
                 <button
                   className="mb-4 btn-primary"
                   onClick={() => {
-                    plotUrls.forEach(url => {
+                    plotData.forEach(plot => {
                       const link = document.createElement('a');
-                      link.href = url;
-                      link.download = url.split('/').pop();
+                      link.href = plot.url;
+                      link.download = plot.url.split('/').pop();
                       document.body.appendChild(link);
                       link.click();
                       document.body.removeChild(link);
@@ -132,12 +169,17 @@ const App = () => {
                   Download All Graphs
                 </button>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {plotUrls.map((url, idx) => (
-                    <div key={idx} className="flex flex-col items-center">
-                      <img src={url} alt={`Graph ${idx + 1}`} className="w-full max-w-xs rounded shadow" />
-                      <span className="mt-2 text-sm text-secondary-700">{url.split('/').pop()}</span>
-                    </div>
-                  ))}
+                  {plotData
+                    .filter(plot =>
+                      (!filterColumn || plot.column === filterColumn) &&
+                      (!filterType || plot.type === filterType)
+                    )
+                    .map((plot, idx) => (
+                      <div key={idx} className="flex flex-col items-center">
+                        <img src={plot.url} alt={`Graph ${idx + 1}`} className="w-full max-w-xs rounded shadow" />
+                        <span className="mt-2 text-sm text-secondary-700">{plot.column} - {plot.type}</span>
+                      </div>
+                    ))}
                 </div>
               </div>
             )}

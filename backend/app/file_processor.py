@@ -217,11 +217,11 @@ class FileProcessor:
         return info 
 
     def generate_graphical_analysis(self, df: pd.DataFrame, filename: str) -> list:
-        """Generate and save basic plots for the DataFrame. Returns list of plot image filenames."""
+        """Generate and save basic plots for the DataFrame. Returns list of plot metadata dicts."""
         import os
         plot_dir = os.path.join('static', 'plots')
         os.makedirs(plot_dir, exist_ok=True)
-        plot_files = []
+        plot_metadata = []
         base_name = os.path.splitext(filename)[0]
         # Histograms for numeric columns
         numeric_cols = df.select_dtypes(include=['number']).columns
@@ -232,7 +232,11 @@ class FileProcessor:
             plot_path = os.path.join(plot_dir, f'{base_name}_{col}_hist.png')
             plt.savefig(plot_path)
             plt.close()
-            plot_files.append(plot_path)
+            plot_metadata.append({
+                'column': col,
+                'type': 'hist',
+                'url': f"/static/plots/{os.path.basename(plot_path)}"
+            })
         # Box plots for numeric columns
         for col in numeric_cols:
             plt.figure()
@@ -241,7 +245,11 @@ class FileProcessor:
             plot_path = os.path.join(plot_dir, f'{base_name}_{col}_box.png')
             plt.savefig(plot_path)
             plt.close()
-            plot_files.append(plot_path)
+            plot_metadata.append({
+                'column': col,
+                'type': 'box',
+                'url': f"/static/plots/{os.path.basename(plot_path)}"
+            })
         # Scatter plot for first two numeric columns
         if len(numeric_cols) >= 2:
             plt.figure()
@@ -250,7 +258,11 @@ class FileProcessor:
             plot_path = os.path.join(plot_dir, f'{base_name}_{numeric_cols[0]}_vs_{numeric_cols[1]}_scatter.png')
             plt.savefig(plot_path)
             plt.close()
-            plot_files.append(plot_path)
+            plot_metadata.append({
+                'column': f'{numeric_cols[0]} vs {numeric_cols[1]}',
+                'type': 'scatter',
+                'url': f"/static/plots/{os.path.basename(plot_path)}"
+            })
         # Line plot for each numeric column (if index is suitable)
         for col in numeric_cols:
             plt.figure()
@@ -261,7 +273,11 @@ class FileProcessor:
             plot_path = os.path.join(plot_dir, f'{base_name}_{col}_line.png')
             plt.savefig(plot_path)
             plt.close()
-            plot_files.append(plot_path)
+            plot_metadata.append({
+                'column': col,
+                'type': 'line',
+                'url': f"/static/plots/{os.path.basename(plot_path)}"
+            })
         # Bar charts for categorical columns (with few unique values)
         cat_cols = [col for col in df.select_dtypes(include=['object', 'category']).columns if df[col].nunique() <= 20]
         for col in cat_cols:
@@ -271,7 +287,11 @@ class FileProcessor:
             plot_path = os.path.join(plot_dir, f'{base_name}_{col}_bar.png')
             plt.savefig(plot_path)
             plt.close()
-            plot_files.append(plot_path)
+            plot_metadata.append({
+                'column': col,
+                'type': 'bar',
+                'url': f"/static/plots/{os.path.basename(plot_path)}"
+            })
         # Pie charts for categorical columns (with few unique values)
         for col in cat_cols:
             plt.figure()
@@ -281,5 +301,9 @@ class FileProcessor:
             plot_path = os.path.join(plot_dir, f'{base_name}_{col}_pie.png')
             plt.savefig(plot_path)
             plt.close()
-            plot_files.append(plot_path)
-        return plot_files 
+            plot_metadata.append({
+                'column': col,
+                'type': 'pie',
+                'url': f"/static/plots/{os.path.basename(plot_path)}"
+            })
+        return plot_metadata 
